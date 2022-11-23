@@ -1,55 +1,112 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void clear();
-void ls();
-int exit_function();
+#define clear() printf("\033[H\033[J") 
+#define BUFSIZE 64
+#define TOK_DELIM " \t\r\n\a"
+#define size sizeof(commandArr) / sizeof(char *) 
 
-void executeCommand(char *arr[]) {
+char *commandArr[] = {"exit","clear","ls","bash","cat"}; 
 
-  if (strcmp(arr[0], "clear") == 0){
-    system("clear");
-  } else if (strcmp(arr[0], "ls") == 0) {
-    system("/bin/ls");
-  } else if (strcmp(arr[0], "cat") == 0) {
-    printf("cat:%s\n", arr[1]);
-  } else if (strcmp(arr[0], "bash") == 0) {
-    system("/bin/bash");
-  } else if (strcmp(arr[0], "exit") == 0) {
-    exit(0);
-  }else{
-    printf("%s: command not found\n",arr[0]);
+void helpCommand(){ //shelldeki help komutunu ifade ediyor.
+
+  printf("Commands: \n");
+
+  for (int i = 0; i< size; i++){
+    printf("--> %s\n", commandArr[i]);
   }
 }
 
-void parseSpace(char *str, char **parsed) {
-  // komutlari bosluklara bakilarak bolme islemi
-  for (int i = 0; i < 100; i++) {
-    parsed[i] = strsep(&str, " ");
-    if (parsed[i] == NULL) {
-      break;
+void execute(char **args){
+
+    int f, i;
+
+    if (strcmp("exit", args[0]) == 0){ // if command exit
+        exit(0); // terminate myshell program
+    }else if (strcmp("clear", args[0]) == 0){ // if command is clear
+        clear(); // clear shell
+    }else if(strcmp("cat", args[0]) == 0){  // Otherwise
+        printf("cat:%s\n", args[1]);
+    }else if (strcmp("bash", args[0]) == 0){
+        system("/bin/bash");
+    }else if(strcmp("ls", args[0]) == 0){
+        system("/bin/ls");
+    }else if(strcmp("help",args[0]) == 0){
+        helpCommand();
+    }else if(strcmp("writef",args[0]) == 0){
+        f = fork();
+        if (f == 0){
+            i = execve("writef", args, NULL);
+            perror("exec failed");
+        }else{
+            wait(&i);
+        }
+    }else if(strcmp("execx",args[0]) == 0){
+        f = fork();
+        if (f == 0){
+            i = execve("execx", args, NULL);
+            perror("exec failed");
+        }else{
+            wait(&i);
+        }
+    }else{
+        printf("Wrong command. Check the help command.\n");
     }
-    if (strlen(parsed[i]) == 0){
-      i--;
-    }
-  }
 }
 
-int main(int argc, char *argv[]) {
 
-  while (1) {
-    char *input = (char *)malloc((100) * sizeof(char *));
-    char *tmp = (char *)malloc((100) * sizeof(char *));
-    char *arg = (char *)malloc((100) * sizeof(char *));
-    int i = 0;
+char **splitLine(char *komut)  //token ile satırı bölme https://brennan.io/2015/01/16/write-a-shell-in-c/
+{
 
-    printf("\nmyshell>>");
-    scanf("%[^\n]%*c", input);
+  int bufsize = BUFSIZE, position = 0;
+  char **tokens = malloc(bufsize * sizeof(char *));
+  char *token;
+  
 
-    parseSpace(input, arg); // tekli islem
-    executeCommand(arg);
+  if (!tokens)
+  {
+    fprintf(stderr, "Buffer error\n");
+    exit(EXIT_FAILURE);
   }
+
+  token = strtok(komut, TOK_DELIM);
+  while (token != NULL)
+  {
+    tokens[position] = token;
+    position++;
+
+    if (position >= bufsize)
+    {
+      bufsize += BUFSIZE;
+      tokens = realloc(tokens, bufsize * sizeof(char *));
+      if (!tokens)
+      {
+        fprintf(stderr, "Buffer error\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+
+    token = strtok(NULL, TOK_DELIM);
+  }
+  tokens[position] = NULL;
+  return tokens;
+}
+
+int main(){
+
+    char *command = (char *)malloc((100) * sizeof(char *));
+    char **param;                                    
+
+    while (1) {
+
+        printf("\nmyshell>>");
+        scanf("%[^\n]%*c", command);
+        param = splitLine(command);
+        execute(param);
+    }
+    free(command); //malloc ile kullandığımız kaynağı geri iade ediyoruz 
+    free(param);
 }
