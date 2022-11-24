@@ -9,7 +9,7 @@
 #define TOK_DELIM " \t\r\n\a"
 #define size sizeof(commandArr) / sizeof(char *) 
 
-char *commandArr[] = {"exit","clear","ls","bash","cat"}; 
+char *commandArr[] = {"exit","clear","ls","bash","cat: cat input","writef: writef -f file_name","execx: execx -t times program"}; 
 
 void helpCommand(){ //shelldeki help komutunu ifade ediyor.
 
@@ -22,7 +22,7 @@ void helpCommand(){ //shelldeki help komutunu ifade ediyor.
 
 void execute(char **args){
 
-    int f, i;
+    int f, status;
 
     if (strcmp("exit", args[0]) == 0){ // if command exit
         exit(0); // terminate myshell program
@@ -39,18 +39,18 @@ void execute(char **args){
     }else if(strcmp("writef",args[0]) == 0){
         f = fork();
         if (f == 0){
-            i = execve("writef", args, NULL);
+            status = execve("writef", args, NULL);
             perror("exec failed");
         }else{
-            wait(&i);
+            wait(&status);
         }
     }else if(strcmp("execx",args[0]) == 0){
         f = fork();
         if (f == 0){
-            i = execve("execx", args, NULL);
+            status = execve("execx", args, NULL);
             perror("exec failed");
         }else{
-            wait(&i);
+            wait(&status);
         }
     }else{
         printf("Wrong command. Check the help command.\n");
@@ -58,37 +58,31 @@ void execute(char **args){
 }
 
 
-char **splitLine(char *komut)  //token ile satırı bölme https://brennan.io/2015/01/16/write-a-shell-in-c/
+char **splitLine(char *command)  //split line with token https://brennan.io/2015/01/16/write-a-shell-in-c/
 {
 
   int bufsize = BUFSIZE, position = 0;
   char **tokens = malloc(bufsize * sizeof(char *));
   char *token;
   
-
-  if (!tokens)
-  {
+  if (!tokens){
     fprintf(stderr, "Buffer error\n");
     exit(EXIT_FAILURE);
   }
 
-  token = strtok(komut, TOK_DELIM);
-  while (token != NULL)
-  {
+  token = strtok(command, TOK_DELIM);
+  while (token != NULL){
     tokens[position] = token;
     position++;
 
-    if (position >= bufsize)
-    {
+    if (position >= bufsize){
       bufsize += BUFSIZE;
       tokens = realloc(tokens, bufsize * sizeof(char *));
-      if (!tokens)
-      {
+      if (!tokens){
         fprintf(stderr, "Buffer error\n");
         exit(EXIT_FAILURE);
       }
     }
-
     token = strtok(NULL, TOK_DELIM);
   }
   tokens[position] = NULL;
