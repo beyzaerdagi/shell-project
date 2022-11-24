@@ -9,7 +9,9 @@
 
 int main(int argc, char *argv[]) {
 
-    if(strcmp(argv[3], "clear") == 0) {
+    int f, status;
+
+    if (strcmp(argv[3], "clear") == 0){
         clear();
     }else if (strcmp(argv[3], "ls") == 0){
         for (int i = 0; i < atoi(argv[2]);i++){
@@ -24,16 +26,19 @@ int main(int argc, char *argv[]) {
             system("/bin/bash");
         }
     }else if (strcmp(argv[3], "exit") == 0){
-        for (int i = 0; i < atoi(argv[2]);i++){
-            exit(0);
-        }
+        exit(0);
     }else if (strcmp(argv[3], "writef") == 0){
-        for (int i = 0; i < atoi(argv[2]);i++){
-            execv("writef", argv);
+        for (int i = 0; i < atoi(argv[2]); i++){
+            f = fork();
+            if (f == 0){
+                status = execve("writef", argv, NULL);
+                exit(0);
+                perror("exec failed");
+            }else{
+                wait(&status);
+            }
         }
-    }else {
-        for(int i = 0; i < atoi(argv[2]); i++){
-            printf("%s\n", argv[3]);
-        }
+    }else{
+        printf("Wrong command. Check the help command.\n");
     }
 }
