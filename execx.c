@@ -18,19 +18,6 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < atoi(argv[2]);i++){
             system("/bin/ls");
         }
-    }else if (strcmp("cat", argv[3]) == 0 && argc >= 5){
-        for (int i = 0; i < atoi(argv[2]); i++){
-            f = fork();
-            if (f == 0){
-                // calls the cat command
-                status = execve("/bin/cat", argv, NULL);
-                exit(0);
-                perror("exec failed");
-            }else{
-                // Waits until the child process has finished
-                wait(&status);
-            }
-        }
     }else if (strcmp("bash", argv[3]) == 0 && argc == 4){
         for (int i = 0; i < atoi(argv[2]);i++){
             system("/bin/bash");
