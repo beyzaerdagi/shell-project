@@ -9,7 +9,7 @@
 #define TOK_DELIM " \t\r\n\a"
 #define size sizeof(commandArr) / sizeof(char *) 
 
-char *commandArr[] = {"exit","clear","ls","bash","cat: cat input","writef: writef -f file_name","execx: execx -t times program"}; 
+char *commandArr[] = {"exit","clear","ls","bash","cat: cat file_name","writef: writef -f file_name","execx: execx -t times program"}; 
 
 // Shows available commands in the shell
 void helpCommand(){
@@ -23,28 +23,33 @@ void helpCommand(){
 
 void execute(char **args){
 
+    int length = argsSize(args);
     int f, status;
     // if command exit
     if (strcmp("exit", args[0]) == 0){ 
         exit(0);
-    }else if (strcmp("clear", args[0]) == 0){ 
+    }else if (strcmp("clear", args[0]) == 0 && length == 1){ 
         //clear shell
         clear();
-    }else if(strcmp("cat", args[0]) == 0){
-        // print the input
-        printf("Cat: ");
-        for (int i = 1; args[i] != '\0'; i++){
-            printf("%s ", args[i]);
+    }else if(strcmp("cat", args[0]) == 0 && length >= 2){
+        f = fork();
+        if (f == 0){
+            // calls the cat command
+            status = execv("/bin/cat", args);
+            perror("exec failed");
+        }else{
+            // Waits until the child process has finished
+            wait(&status);
         }
-    }else if (strcmp("bash", args[0]) == 0){
+    }else if (strcmp("bash", args[0]) == 0 && length == 1){
         // goes to system bash
         system("/bin/bash");
-    }else if(strcmp("ls", args[0]) == 0){
+    }else if(strcmp("ls", args[0]) == 0 && length == 1){
         // fetches the contents of the folder
         system("/bin/ls");
-    }else if(strcmp("help",args[0]) == 0){
+    }else if(strcmp("help", args[0]) == 0 && length == 1){
         helpCommand();
-    }else if(strcmp("writef",args[0]) == 0){
+    }else if(strcmp("writef", args[0]) == 0 && strcmp("-f", args[1]) == 0 && args[2] != NULL && length == 3){
         f = fork();
         if (f == 0){
             // calls the writef function
@@ -54,7 +59,7 @@ void execute(char **args){
             // Waits until the child process has finished
             wait(&status);
         }
-    }else if(strcmp("execx",args[0]) == 0){
+    }else if(strcmp("execx", args[0]) == 0 && strcmp("-t", args[1]) == 0 && isNumber(args[2]) == 1 && length >= 4){
         f = fork();
         if (f == 0){
             // calls the execx function
@@ -66,6 +71,28 @@ void execute(char **args){
     }else{
         printf("Wrong command. Check the help command.\n");
     }
+}
+
+//find the args size
+int argsSize(char **args){
+    int length = 0;
+    for (int i = 0; args[i] != '\0';i++){
+        length++;
+    }
+    return length;
+}
+
+//check if string is number
+int isNumber(char *n) {
+
+  int i = strlen(n);
+  int isnum = (i>0);
+  while (i-- && isnum) {
+    if (!(n[i] >= '0' && n[i] <= '9')) {
+      isnum = 0;
+    }
+  }
+  return isnum;
 }
 
 //split line with token https://brennan.io/2015/01/16/write-a-shell-in-c/
