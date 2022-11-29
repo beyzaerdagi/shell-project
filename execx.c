@@ -5,34 +5,39 @@
 #include <sys/wait.h>
 
 //Clear terminal
-#define clear() printf("\033[H\033[J") 
+#define clear() printf("\033[H\033[J")
 
 int main(int argc, char *argv[]) {
 
     int f, status;
 
-    if (strcmp(argv[3], "clear") == 0){
+    if (strcmp("clear", argv[3]) == 0 && argc == 4){
         clear();
-    }else if (strcmp(argv[3], "ls") == 0){
+    }else if (strcmp("ls", argv[3]) == 0 && argc == 4){
         //Prints the contents of the folder up to the entered times
         for (int i = 0; i < atoi(argv[2]);i++){
             system("/bin/ls");
         }
-    }else if (strcmp(argv[3], "cat") == 0){
-        for (int i = 0; i < atoi(argv[2]);i++){
-            printf("Cat: ");
-            for (int j = 4; argv[j] != '\0'; j++){
-                printf("%s ", argv[j]);
+    }else if (strcmp("cat", argv[3]) == 0 && argc >= 5){
+        for (int i = 0; i < atoi(argv[2]); i++){
+            f = fork();
+            if (f == 0){
+                // calls the cat command
+                status = execve("/bin/cat", argv, NULL);
+                exit(0);
+                perror("exec failed");
+            }else{
+                // Waits until the child process has finished
+                wait(&status);
             }
-            printf("\n");
         }
-    }else if (strcmp(argv[3], "bash") == 0){
+    }else if (strcmp("bash", argv[3]) == 0 && argc == 4){
         for (int i = 0; i < atoi(argv[2]);i++){
             system("/bin/bash");
         }
-    }else if (strcmp(argv[3], "exit") == 0){
+    }else if (strcmp("exit", argv[3]) == 0){
         exit(0);
-    }else if (strcmp(argv[3], "writef") == 0){
+    }else if (strcmp("writef", argv[3]) == 0 && strcmp(argv[4], "-f") == 0 && argc == 6){
         for (int i = 0; i < atoi(argv[2]); i++){
             f = fork();
             if (f == 0){
