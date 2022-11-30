@@ -84,15 +84,16 @@ int argsSize(char **args){
 
 //check if string is number
 int isNumber(char *n) {
-
-  int i = strlen(n);
-  int isnum = (i>0);
-  while (i-- && isnum) {
-    if (!(n[i] >= '0' && n[i] <= '9')) {
-      isnum = 0;
+  int isNum;
+  for (int i = 0; n[i] != '\0'; i++){
+    isNum = i > 0;
+    if(isNum){
+      if (!(n[i] >= '0' && n[i] <= '9')) {
+        isNum = 0;
+      }
     }
   }
-  return isnum;
+  return isNum;
 }
 
 //split line with token https://brennan.io/2015/01/16/write-a-shell-in-c/
