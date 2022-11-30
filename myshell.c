@@ -84,13 +84,14 @@ int argsSize(char **args){
 
 //check if string is number
 int isNumber(char *n) {
-  int isNum;
+
+  int isNum = 1;
   for (int i = 0; n[i] != '\0'; i++){
-    isNum = i > 0;
-    if(isNum){
-      if (!(n[i] >= '0' && n[i] <= '9')) {
-        isNum = 0;
-      }
+    if (!isdigit(n[i])){
+      isNum = 0;
+    }
+    if(isNum == 0){
+      return 0;
     }
   }
   return isNum;
