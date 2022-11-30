@@ -22,8 +22,6 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < atoi(argv[2]);i++){
             system("/bin/bash");
         }
-    }else if (strcmp("exit", argv[3]) == 0){
-        exit(0);
     }else if (strcmp("writef", argv[3]) == 0 && strcmp(argv[4], "-f") == 0 && argc == 6){
         for (int i = 0; i < atoi(argv[2]); i++){
             f = fork();
